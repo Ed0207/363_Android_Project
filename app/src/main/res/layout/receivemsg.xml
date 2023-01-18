@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="left"
+    android:background="@color/black"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/receivemsgtext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="350dp"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="2sp"
+        android:layout_marginTop="2sp"
+        android:layout_marginEnd="2sp"
+        android:layout_marginBottom="2sp"
+        android:background="@drawable/rectanglebox"
+        android:textColor="@color/black"
+        android:padding="10dp"
+        android:text="testing sent message"
+        android:textSize="25sp"
+        android:gravity="left"
+
+        android:layout_marginVertical="5dp"
+        app:layout_constraintWidth_max="300dp"
+        app:layout_constraintLeft_toRightOf="@+id/chatrcvimg"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <ImageView
+        android:id="@+id/chatrcvimg"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginRight="2sp"
+        android:layout_toLeftOf="@+id/receivemsgtext"
+        android:src="@drawable/cryingcat"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

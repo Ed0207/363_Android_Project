@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:id="@+id/mainmenulayout"
+    android:paddingTop="100dp"
+    android:orientation="vertical"
+    tools:context=".MainMenuActivity">
+
+    <ImageView
+        android:layout_marginHorizontal="10dp"
+        android:src="@drawable/activity"
+        android:scaleType="centerCrop"
+        android:elevation="1dp"
+        android:clickable="true"
+        android:id="@+id/findActivityImageButton"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="-16dp"/>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rectanglebox"
+        android:elevation="2dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="find activity"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="@+id/findActivityImageButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/findActivityImageButton"
+        app:layout_constraintTop_toTopOf="@+id/findActivityImageButton"
+        app:layout_constraintVertical_bias="0.639" />
+
+    <ImageView
+        android:layout_marginHorizontal="10dp"
+        android:src="@drawable/schedule"
+        android:scaleType="centerCrop"
+        android:clickable="true"
+        android:id="@+id/scheduleActivityImageButton"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toBottomOf="@+id/findActivityImageButton"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <TextView
+        android:background="@drawable/rectanglebox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="2dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="scheduled activity"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="@+id/scheduleActivityImageButton"
+        app:layout_constraintEnd_toEndOf="@+id/scheduleActivityImageButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/scheduleActivityImageButton" />
+
+
+    <ImageView
+        android:layout_marginHorizontal="10dp"
+        android:src="@drawable/contact"
+        android:scaleType="centerCrop"
+        android:clickable="true"
+        android:id="@+id/contactListImageButton"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toBottomOf="@+id/scheduleActivityImageButton"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <TextView
+        android:background="@drawable/rectanglebox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="2dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="Other Users"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="@+id/contactListImageButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/contactListImageButton" />
+
+
+    <ImageView
+        android:layout_marginHorizontal="10dp"
+        android:src="@drawable/setting"
+        android:scaleType="centerCrop"
+        android:clickable="true"
+        android:id="@+id/configImageButton"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toBottomOf="@+id/contactListImageButton"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <TextView
+        android:background="@drawable/rectanglebox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="2dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="config"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="@+id/configImageButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/configImageButton" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

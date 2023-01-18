@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="About"
+        >
+
+        <Preference
+            android:title="User Information"
+            android:summary="User Profile"
+            android:key="UserInfo"
+            >
+        </Preference>
+
+        <CheckBoxPreference
+            android:title="Privacy Settings"
+            android:key="checkboxpreference"
+            android:summary="Posting your records anonymously"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Events"
+        >
+
+        <Preference
+            android:title="History"
+            android:summary="Events Attended"
+            android:key="HistoryInfo"
+            >
+        </Preference>
+
+
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

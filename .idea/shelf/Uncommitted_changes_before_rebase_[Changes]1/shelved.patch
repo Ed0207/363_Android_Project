@@ -1,0 +1,120 @@
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    package=\"com.example.projectlfg\">\n\n    <uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" />\n    <uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>\n    <uses-permission android:name=\"android.permission.CAMERA\"/>\n    <uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />\n    <uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>\n\n    <application\n        android:allowBackup=\"true\"\n        android:dataExtractionRules=\"@xml/data_extraction_rules\"\n        android:fullBackupContent=\"@xml/backup_rules\"\n        android:icon=\"@mipmap/ic_launcher\"\n        android:label=\"@string/app_name\"\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\n        android:supportsRtl=\"true\"\n        android:theme=\"@style/Theme.ProjectLFG\"\n        tools:targetApi=\"31\">\n\n        <!--\n             TODO: Before you run your application, you need a Google Maps API key.\n\n             To get one, follow the directions here:\n\n                https://developers.google.com/maps/documentation/android-sdk/get-api-key\n\n             Once you have your API key (it starts with \"AIza\"), define a new property in your\n             project's local.properties file (e.g. MAPS_API_KEY=Aiza...), and replace the\n             \"YOUR_API_KEY\" string in this file with \"${MAPS_API_KEY}\".\n        -->\n        <meta-data\n            android:name=\"com.google.android.geo.API_KEY\"\n            android:value=\"${MAPS_API_KEY}\" />\n        <activity\n            android:name=\".UserPreferenceActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".UserInfoActivity\"\n            android:exported=\"false\" />\n\n\n\n        <activity\n            android:name=\".MapsActivity\"\n            android:exported=\"false\"\n            android:label=\"@string/title_activity_maps\" />\n        <activity\n            android:name=\".LogInActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".RegisterActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".UserHistoryActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".MainActivity\"\n            android:exported=\"true\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\" />\n\n                <category android:name=\"android.intent.category.LAUNCHER\" />\n            </intent-filter>\n        </activity>\n        <activity\n            android:name=\".MainMenuActivity\"\n            android:exported=\"true\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\" />\n                <category android:name=\"android.intent.category.LAUNCHER\" />\n            </intent-filter>\n        </activity>\n\n\n\n    </application>\n\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml	(revision 4728b8df5ea4f79adb6473b4c48c0ece22ed9177)
++++ b/app/src/main/AndroidManifest.xml	(date 1669782860688)
+@@ -65,7 +65,6 @@
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
+-        <activity
+             android:name=".MainMenuActivity"
+             android:exported="true">
+             <intent-filter>
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"DesignSurface\">\n    <option name=\"filePathToZoomLevelMap\">\n      <map>\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_log_in.xml\" value=\"0.1796875\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_main.xml\" value=\"0.1796875\" />\n        <entry key=\"app/src/main/res/drawable/circlebox.xml\" value=\"0.163\" />\n        <entry key=\"app/src/main/res/drawable/rectanglebox.xml\" value=\"0.1475\" />\n        <entry key=\"app/src/main/res/layout/activity_add_event.xml\" value=\"0.18931159420289856\" />\n        <entry key=\"app/src/main/res/layout/activity_event_history_row.xml\" value=\"0.18931159420289856\" />\n        <entry key=\"app/src/main/res/layout/activity_event_info.xml\" value=\"0.18931159420289856\" />\n        <entry key=\"app/src/main/res/layout/activity_events_history.xml\" value=\"0.18931159420289856\" />\n        <entry key=\"app/src/main/res/layout/activity_log_in.xml\" value=\"0.25\" />\n        <entry key=\"app/src/main/res/layout/activity_main.xml\" value=\"0.18931159420289856\" />\n        <entry key=\"app/src/main/res/layout/activity_main_menu.xml\" value=\"0.18931159420289856\" />\n        <entry key=\"app/src/main/res/layout/activity_register.xml\" value=\"0.21158484859742982\" />\n        <entry key=\"app/src/main/res/layout/activity_setting_fragment.xml\" value=\"0.18931159420289856\" />\n        <entry key=\"app/src/main/res/layout/activity_user.xml\" value=\"0.18931159420289856\" />\n        <entry key=\"app/src/main/res/xml/user_preference.xml\" value=\"0.260595703125\" />\n      </map>\n    </option>\n  </component>\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_X\" default=\"true\" project-jdk-name=\"Android Studio default JDK\" project-jdk-type=\"JavaSDK\">\n    <output url=\"file://$PROJECT_DIR$/build/classes\" />\n  </component>\n  <component name=\"ProjectType\">\n    <option name=\"id\" value=\"Android\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 4728b8df5ea4f79adb6473b4c48c0ece22ed9177)
++++ b/.idea/misc.xml	(date 1669782814213)
+@@ -3,25 +3,29 @@
+   <component name="DesignSurface">
+     <option name="filePathToZoomLevelMap">
+       <map>
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/circlebox.xml" value="0.1" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/rectangle.xml" value="0.1" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/rectanglebox.xml" value="0.1" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_chat.xml" value="0.1796875" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_contact_list.xml" value="0.1796875" />
+         <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_log_in.xml" value="0.1796875" />
+         <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_main.xml" value="0.1796875" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_main_menu.xml" value="0.14666666666666667" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_register.xml" value="0.1796875" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_register2.xml" value="0.1" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/contactlistlayout.xml" value="0.16666666666666666" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/receivemsg.xml" value="0.17864583333333334" />
++        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/sentmsg.xml" value="0.17864583333333334" />
+         <entry key="app/src/main/res/drawable/circlebox.xml" value="0.163" />
+         <entry key="app/src/main/res/drawable/rectanglebox.xml" value="0.1475" />
+-        <entry key="app/src/main/res/layout/activity_add_event.xml" value="0.18931159420289856" />
+-        <entry key="app/src/main/res/layout/activity_event_history_row.xml" value="0.18931159420289856" />
+-        <entry key="app/src/main/res/layout/activity_event_info.xml" value="0.18931159420289856" />
+-        <entry key="app/src/main/res/layout/activity_events_history.xml" value="0.18931159420289856" />
+         <entry key="app/src/main/res/layout/activity_log_in.xml" value="0.25" />
+-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.18931159420289856" />
+-        <entry key="app/src/main/res/layout/activity_main_menu.xml" value="0.18931159420289856" />
+         <entry key="app/src/main/res/layout/activity_register.xml" value="0.21158484859742982" />
+-        <entry key="app/src/main/res/layout/activity_setting_fragment.xml" value="0.18931159420289856" />
+-        <entry key="app/src/main/res/layout/activity_user.xml" value="0.18931159420289856" />
+-        <entry key="app/src/main/res/xml/user_preference.xml" value="0.260595703125" />
+       </map>
+     </option>
+   </component>
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+     <output url="file://$PROJECT_DIR$/build/classes" />
+   </component>
+   <component name="ProjectType">
+Index: app/src/main/java/com/example/projectlfg/MainMenuActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.projectlfg\n\nimport android.content.Intent\nimport androidx.appcompat.app.AppCompatActivity\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.ImageView\n\nclass MainMenuActivity : AppCompatActivity(), View.OnClickListener{\n\n    private lateinit var findActivityImageButton: ImageView\n    private lateinit var scheduledActivityImageButton: ImageView\n    private lateinit var contactListImageButton: ImageView\n    private lateinit var configImageButton: ImageView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main_menu)\n\n        // init image view\n        findActivityImageButton = findViewById(R.id.findActivityImageButton)\n        findActivityImageButton.setOnClickListener(this)\n\n        scheduledActivityImageButton = findViewById(R.id.scheduleActivityImageButton)\n        scheduledActivityImageButton.setOnClickListener(this)\n\n        contactListImageButton = findViewById(R.id.contactListImageButton)\n        contactListImageButton.setOnClickListener(this)\n\n        configImageButton = findViewById(R.id.configImageButton)\n        configImageButton.setOnClickListener(this)\n    }\n\n    override fun onClick(v: View?) {\n        if(v == contactListImageButton){\n\n        }else if(v==configImageButton){\n\n//            this.supportFragmentManager.beginTransaction().replace(R.id.mainmenulayout,SettingPreferenceFragment())\n//                .addToBackStack(null).commit();\n\n            val intent = Intent(this,UserPreferenceActivity::class.java)\n            startActivity(intent);\n        }\n        else if (v == findActivityImageButton) {\n            val intent = Intent(this, MapsActivity::class.java)\n            startActivity(intent)\n        }\n    }\n\n\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt b/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt
+--- a/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt	(revision 4728b8df5ea4f79adb6473b4c48c0ece22ed9177)
++++ b/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt	(date 1669782807968)
+@@ -18,33 +18,25 @@
+         setContentView(R.layout.activity_main_menu)
+ 
+         // init image view
+-        findActivityImageButton = findViewById(R.id.findActivityImageButton)
++        findActivityImageButton         = findViewById(R.id.findActivityImageButton)
+         findActivityImageButton.setOnClickListener(this)
+ 
+-        scheduledActivityImageButton = findViewById(R.id.scheduleActivityImageButton)
++        scheduledActivityImageButton    = findViewById(R.id.scheduleActivityImageButton)
+         scheduledActivityImageButton.setOnClickListener(this)
+ 
+-        contactListImageButton = findViewById(R.id.contactListImageButton)
++        contactListImageButton          = findViewById(R.id.contactListImageButton)
+         contactListImageButton.setOnClickListener(this)
+ 
+-        configImageButton = findViewById(R.id.configImageButton)
++        configImageButton               = findViewById(R.id.configImageButton)
+         configImageButton.setOnClickListener(this)
++
+     }
+ 
+     override fun onClick(v: View?) {
+-        if(v == contactListImageButton){
+-
+-        }else if(v==configImageButton){
+ 
+-//            this.supportFragmentManager.beginTransaction().replace(R.id.mainmenulayout,SettingPreferenceFragment())
+-//                .addToBackStack(null).commit();
+-
+-            val intent = Intent(this,UserPreferenceActivity::class.java)
+-            startActivity(intent);
+-        }
+-        else if (v == findActivityImageButton) {
+-            val intent = Intent(this, MapsActivity::class.java)
+-            startActivity(intent)
++        when(v){
++            contactListImageButton-> startActivity(Intent(this, ContactListActivity::class.java))
++            else->println("click")
+         }
+     }
+ 

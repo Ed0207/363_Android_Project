@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "31465561471",
+    "project_id": "projectlfg-db01e",
+    "storage_bucket": "projectlfg-db01e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:31465561471:android:b29f88601b20255b990e4a",
+        "android_client_info": {
+          "package_name": "com.example.projectlfg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "31465561471-3udk659r9s6cmi643gaco9ao4slti9us.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPoK1GWyfqCd6Pvef97zbifUzrO00x4kg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "31465561471-3udk659r9s6cmi643gaco9ao4slti9us.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

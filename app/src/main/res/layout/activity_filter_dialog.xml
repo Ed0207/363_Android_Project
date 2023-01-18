@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/activity_type"
+        android:textSize="25sp"
+        android:layout_marginHorizontal="10dp"
+        android:textStyle="bold"
+        android:layout_marginTop="10dp"/>
+
+    <Spinner
+        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:id="@+id/filter_activity_type_spinner"
+        ></Spinner>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/limit_people"
+        android:textSize="25sp"
+        android:layout_marginHorizontal="10dp"
+        android:textStyle="bold"
+        android:layout_marginTop="10dp"/>
+
+    <Spinner
+        android:layout_height="50dp"
+        android:layout_width="match_parent"
+        android:id="@+id/filter_number_of_people"
+        ></Spinner>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/RemoveFilters"
+        android:text="Remove Filters"
+        >
+
+    </Button>
+
+</LinearLayout>

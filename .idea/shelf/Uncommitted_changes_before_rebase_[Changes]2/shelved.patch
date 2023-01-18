@@ -1,0 +1,1222 @@
+Index: app/src/main/java/com/example/projectlfg/RegisterActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.projectlfg\n\nimport android.app.Activity\nimport android.content.Intent\nimport android.net.Uri\nimport androidx.appcompat.app.AppCompatActivity\nimport android.os.Bundle\nimport android.provider.MediaStore\nimport android.text.TextUtils\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.activity.result.ActivityResultLauncher\nimport androidx.activity.result.contract.ActivityResultContracts\nimport com.example.projectlfg.Util.popUp\nimport com.example.projectlfg.databinding.ActivityRegisterBinding\nimport com.google.firebase.auth.FirebaseAuth\nimport com.google.firebase.database.DatabaseReference\nimport com.google.firebase.database.ktx.database\nimport com.google.firebase.ktx.Firebase\nimport com.google.firebase.storage.FirebaseStorage\nimport com.google.firebase.storage.StorageReference\nimport com.google.firebase.storage.ktx.storage\nimport java.util.*\n\nclass RegisterActivity : AppCompatActivity() {\n\n\n    private lateinit var binding: ActivityRegisterBinding\n\n\n    private lateinit var NameEditText: EditText;\n    private lateinit var EmailEditText: EditText;\n    private lateinit var PasswordEditText: EditText;\n    private lateinit var RegisterButton: Button;\n    private lateinit var UserImageView : ImageView;\n\n    private lateinit var authenticator: FirebaseAuth;\n    private lateinit var myref : DatabaseReference;\n    private lateinit var storage: FirebaseStorage;\n    private lateinit var storageRef : StorageReference\n\n    private var imageUri: Uri?=null;\n    private lateinit var ImageGalleryIntent : ActivityResultLauncher<Intent>\n\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        binding = ActivityRegisterBinding.inflate(layoutInflater)\n        val view = binding.root;\n        setContentView(view);\n\n        NameEditText  = binding.RegisterName\n        EmailEditText = binding.RegisterEmail\n        PasswordEditText = binding.RegisterPassword\n        RegisterButton = binding.RegisterButton\n        UserImageView = binding.UserImageView;\n\n\n        storage = Firebase.storage;\n        storageRef = storage.reference\n        authenticator = FirebaseAuth.getInstance()\n        myref = Firebase.database.reference\n\n        Util.checkPermissions(this);\n\n\n        UserImageView.setOnClickListener {\n            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)\n            ImageGalleryIntent.launch(gallery);\n        }\n\n        ImageGalleryIntent = registerForActivityResult(ActivityResultContracts.StartActivityForResult(),{\n            if(it.resultCode == Activity.RESULT_OK){\n                imageUri= it.data!!.data;\n                UserImageView.setImageURI(imageUri);\n            }\n        })\n\n        RegisterButton.setOnClickListener {\n            val NameNotEmpty = TextUtils.isEmpty(NameEditText.text.toString())\n            val EmailNotEmpty = TextUtils.isEmpty(EmailEditText.text.toString())\n            val PasswordNotEmpty = TextUtils.isEmpty(PasswordEditText.text.toString())\n\n            if(!NameNotEmpty && !EmailNotEmpty && !PasswordNotEmpty){\n                signUp(NameEditText.text.toString(),EmailEditText.text.toString(),PasswordEditText.text.toString())\n            }else{\n                popUp(this, \"please fill in user information\")\n            }\n        }\n    }\n\n\n\n    private fun signUp(name: String, email: String, password: String){\n\n        // Pre-config firebase signup method\n        authenticator.createUserWithEmailAndPassword(email, password)\n            .addOnCompleteListener(this) { task ->\n                if (task.isSuccessful && imageUri != null) {\n                    \n                    // store user profile\n                    val uniqueid = UUID.randomUUID();\n                    val ref= storageRef.child(\"images/\"+uniqueid);\n                    val uploadTask = ref.putFile(imageUri!!);\n\n                    // temporary replacement\n                    val user = authenticator.currentUser;\n                    val userinfo = UserInformation(name,email,\"\",user!!.uid);\n                    myref.child(\"users\").child(user!!.uid).setValue(userinfo);\n                    Toast.makeText(this,\"You've Signed Up Successfully\", Toast.LENGTH_LONG).show();\n\n                    val urlTask = uploadTask.continueWithTask {\n                        if(!task.isSuccessful){\n                            task.exception?.let{\n                                throw it\n                            }\n                        }\n                        ref.downloadUrl\n                    }.addOnCompleteListener {\n                        if(it.isSuccessful){\n                            // register user to the \"user\" database\n\n                            val downloadUri= it.result;\n                            val user = authenticator.currentUser;\n                            myref.child(\"users\").child(user!!.uid).child(\"imageuri\").setValue(userinfo);\n\n                            finish()\n                        }\n\n                    }.addOnFailureListener {\n                        Toast.makeText(this,it.localizedMessage, Toast.LENGTH_LONG).show()\n                    }\n                }\n\n            }.addOnFailureListener {\n                Toast.makeText(this,it.localizedMessage, Toast.LENGTH_LONG).show()\n            }\n    }\n\n    companion object{\n        val PICK_IMAGE = 100;\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/RegisterActivity.kt b/app/src/main/java/com/example/projectlfg/RegisterActivity.kt
+--- a/app/src/main/java/com/example/projectlfg/RegisterActivity.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/java/com/example/projectlfg/RegisterActivity.kt	(date 1669782797365)
+@@ -13,6 +13,7 @@
+ import android.widget.Toast
+ import androidx.activity.result.ActivityResultLauncher
+ import androidx.activity.result.contract.ActivityResultContracts
++import androidx.core.net.toUri
+ import com.example.projectlfg.Util.popUp
+ import com.example.projectlfg.databinding.ActivityRegisterBinding
+ import com.google.firebase.auth.FirebaseAuth
+@@ -40,6 +41,7 @@
+     private lateinit var myref : DatabaseReference;
+     private lateinit var storage: FirebaseStorage;
+     private lateinit var storageRef : StorageReference
++    private lateinit var ImgClickButton: Button;
+ 
+     private var imageUri: Uri?=null;
+     private lateinit var ImageGalleryIntent : ActivityResultLauncher<Intent>
+@@ -56,6 +58,12 @@
+         PasswordEditText = binding.RegisterPassword
+         RegisterButton = binding.RegisterButton
+         UserImageView = binding.UserImageView;
++        ImgClickButton = binding.RegisterImgButton;
++
++        ImgClickButton.setOnClickListener {
++            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
++            ImageGalleryIntent.launch(gallery);
++        }
+ 
+ 
+         storage = Firebase.storage;
+@@ -65,10 +73,10 @@
+ 
+         Util.checkPermissions(this);
+ 
+-
+-        UserImageView.setOnClickListener {
+-            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+-            ImageGalleryIntent.launch(gallery);
++        if(savedInstanceState != null){
++            if(savedInstanceState.containsKey("imguri")){
++                imageUri = savedInstanceState.getString("imguri")!!.toUri();
++            }
+         }
+ 
+         ImageGalleryIntent = registerForActivityResult(ActivityResultContracts.StartActivityForResult(),{
+@@ -83,7 +91,7 @@
+             val EmailNotEmpty = TextUtils.isEmpty(EmailEditText.text.toString())
+             val PasswordNotEmpty = TextUtils.isEmpty(PasswordEditText.text.toString())
+ 
+-            if(!NameNotEmpty && !EmailNotEmpty && !PasswordNotEmpty){
++            if(!NameNotEmpty && !EmailNotEmpty && !PasswordNotEmpty && imageUri != null){
+                 signUp(NameEditText.text.toString(),EmailEditText.text.toString(),PasswordEditText.text.toString())
+             }else{
+                 popUp(this, "please fill in user information")
+@@ -91,6 +99,11 @@
+         }
+     }
+ 
++    override fun onSaveInstanceState(outState: Bundle) {
++        super.onSaveInstanceState(outState)
++        outState.putString("imguri",imageUri.toString());
++    }
++
+ 
+ 
+     private fun signUp(name: String, email: String, password: String){
+@@ -99,18 +112,11 @@
+         authenticator.createUserWithEmailAndPassword(email, password)
+             .addOnCompleteListener(this) { task ->
+                 if (task.isSuccessful && imageUri != null) {
+-                    
+-                    // store user profile
++                    // Sign in success
+                     val uniqueid = UUID.randomUUID();
+                     val ref= storageRef.child("images/"+uniqueid);
+                     val uploadTask = ref.putFile(imageUri!!);
+ 
+-                    // temporary replacement
+-                    val user = authenticator.currentUser;
+-                    val userinfo = UserInformation(name,email,"",user!!.uid);
+-                    myref.child("users").child(user!!.uid).setValue(userinfo);
+-                    Toast.makeText(this,"You've Signed Up Successfully", Toast.LENGTH_LONG).show();
+-
+                     val urlTask = uploadTask.continueWithTask {
+                         if(!task.isSuccessful){
+                             task.exception?.let{
+@@ -120,20 +126,25 @@
+                         ref.downloadUrl
+                     }.addOnCompleteListener {
+                         if(it.isSuccessful){
+-                            // register user to the "user" database
+-
+                             val downloadUri= it.result;
+                             val user = authenticator.currentUser;
+-                            myref.child("users").child(user!!.uid).child("imageuri").setValue(userinfo);
+-
+-                            finish()
++                            val userinfo = UserInformation(name=name,email=email,imageuri=downloadUri.toString());
++                            myref.child("users").child(user!!.uid).setValue(userinfo);
++                            Toast.makeText(this,"You've Signed Up Successfully", Toast.LENGTH_LONG).show();
++                        }else{
++                            popUp(this, "sign up fails..")
+                         }
+-
+                     }.addOnFailureListener {
+                         Toast.makeText(this,it.localizedMessage, Toast.LENGTH_LONG).show()
+                     }
++
++                    val intent= Intent(this,MainMenuActivity::class.java);
++                    startActivity(intent);
++                    finish();
++
++                } else {
++                    // If sign up fails
+                 }
+-
+             }.addOnFailureListener {
+                 Toast.makeText(this,it.localizedMessage, Toast.LENGTH_LONG).show()
+             }
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    package=\"com.example.projectlfg\">\n\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />\n    <uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />\n\n    <application\n        android:allowBackup=\"true\"\n        android:dataExtractionRules=\"@xml/data_extraction_rules\"\n        android:fullBackupContent=\"@xml/backup_rules\"\n        android:icon=\"@mipmap/ic_launcher\"\n        android:label=\"@string/app_name\"\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\n        android:supportsRtl=\"true\"\n        android:theme=\"@style/Theme.ProjectLFG\"\n        tools:targetApi=\"31\">\n        <activity\n            android:name=\".ChatActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".ContactListActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".RegisterActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".MainMenuActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".MainActivity\"\n            android:exported=\"true\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\" />\n\n                <category android:name=\"android.intent.category.LAUNCHER\" />\n            </intent-filter>\n        </activity>\n    </application>\n\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/AndroidManifest.xml	(date 1669782890435)
+@@ -3,9 +3,8 @@
+     xmlns:tools="http://schemas.android.com/tools"
+     package="com.example.projectlfg">
+ 
+-    <uses-permission android:name="android.permission.CAMERA" />
+-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
++    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+ 
+     <application
+         android:allowBackup="true"
+@@ -17,27 +16,71 @@
+         android:supportsRtl="true"
+         android:theme="@style/Theme.ProjectLFG"
+         tools:targetApi="31">
+-        <activity
+-            android:name=".ChatActivity"
+-            android:exported="false" />
++
++        <!--
++             TODO: Before you run your application, you need a Google Maps API key.
++
++             To get one, follow the directions here:
++
++                https://developers.google.com/maps/documentation/android-sdk/get-api-key
++
++             Once you have your API key (it starts with "AIza"), define a new property in your
++             project's local.properties file (e.g. MAPS_API_KEY=Aiza...), and replace the
++             "YOUR_API_KEY" string in this file with "${MAPS_API_KEY}".
++        -->
++
++
+         <activity
+-            android:name=".ContactListActivity"
+-            android:exported="false" />
++            android:name=".MapsActivity"
++            android:exported="false"
++            android:label="@string/title_activity_maps" />
+         <activity
+             android:name=".RegisterActivity"
++            android:exported="false"
++            android:label="@string/title_activity_maps" />
++        <activity
++            android:name=".LogInActivity"
+             android:exported="false" />
+         <activity
+-            android:name=".MainMenuActivity"
+-            android:exported="false" />
++            android:name=".EventInfoActivity"
++            android:exported="false">
++        </activity>
++        <activity
++            android:name=".UserHistoryActivity"
++            android:exported="false">
++        </activity>
++        <activity
++            android:name=".UserPreferenceActivity"
++            android:exported="false">
++        </activity>
+         <activity
+-            android:name=".MainActivity"
++            android:name=".UserInfoActivity"
++            android:exported="false">
++        </activity>
++<!--        <activity-->
++<!--            android:name=".MainActivity"-->
++<!--            android:exported="true">-->
++<!--            <intent-filter>-->
++<!--                <action android:name="android.intent.action.MAIN" />-->
++<!--                <category android:name="android.intent.category.LAUNCHER" />-->
++<!--            </intent-filter>-->
++<!--        </activity>-->
++        <activity
++            android:name=".MainMenuActivity"
+             android:exported="true">
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+-
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
++
++
++        <meta-data
++            android:name="com.google.android.geo.API_KEY"
++            android:value="${MAPS_API_KEY}" />
++
++
++
+     </application>
+ 
+ </manifest>
+\ No newline at end of file
+Index: app/src/main/java/com/example/projectlfg/MainMenuActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.projectlfg\n\nimport android.content.Intent\nimport androidx.appcompat.app.AppCompatActivity\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.ImageView\n\nclass MainMenuActivity : AppCompatActivity(), View.OnClickListener{\n\n    private lateinit var findActivityImageButton: ImageView\n    private lateinit var scheduledActivityImageButton: ImageView\n    private lateinit var contactListImageButton: ImageView\n    private lateinit var configImageButton: ImageView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main_menu)\n\n        // init image view\n        findActivityImageButton         = findViewById(R.id.findActivityImageButton)\n        findActivityImageButton.setOnClickListener(this)\n\n        scheduledActivityImageButton    = findViewById(R.id.scheduleActivityImageButton)\n        scheduledActivityImageButton.setOnClickListener(this)\n\n        contactListImageButton          = findViewById(R.id.contactListImageButton)\n        contactListImageButton.setOnClickListener(this)\n\n        configImageButton               = findViewById(R.id.configImageButton)\n        configImageButton.setOnClickListener(this)\n\n    }\n\n    override fun onClick(v: View?) {\n\n        when(v){\n            contactListImageButton-> startActivity(Intent(this, ContactListActivity::class.java))\n            else->println(\"click\")\n        }\n    }\n\n\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt b/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt
+--- a/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt	(date 1669783214368)
+@@ -29,14 +29,17 @@
+ 
+         configImageButton               = findViewById(R.id.configImageButton)
+         configImageButton.setOnClickListener(this)
+-
+     }
+ 
+     override fun onClick(v: View?) {
++        if(v == contactListImageButton){
++
++        }else if(v==configImageButton){
+ 
+-        when(v){
+-            contactListImageButton-> startActivity(Intent(this, ContactListActivity::class.java))
+-            else->println("click")
++
++
++            val intent = Intent(this,UserPreferenceActivity::class.java)
++            startActivity(intent);
+         }
+     }
+ 
+Index: app/src/main/res/layout/contactlistlayout.xml
+===================================================================
+diff --git a/app/src/main/res/layout/contactlistlayout.xml b/app/src/main/res/layout/contactlistlayout.xml
+deleted file mode 100644
+--- a/app/src/main/res/layout/contactlistlayout.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,41 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:app="http://schemas.android.com/apk/res-auto"
+-    xmlns:tools="http://schemas.android.com/tools"
+-    android:layout_width="match_parent"
+-    android:layout_height="wrap_content"
+-    android:background="@color/black">
+-
+-    <TextView
+-        android:id="@+id/contactName"
+-        android:layout_width="match_parent"
+-        android:layout_height="100dp"
+-        android:layout_marginTop="10dp"
+-        android:paddingLeft="10dp"
+-        android:text="username"
+-        android:textColor="@color/white"
+-        android:textSize="40sp"
+-        app:layout_constraintEnd_toEndOf="parent"
+-        app:layout_constraintHorizontal_bias="0.0"
+-        app:layout_constraintStart_toStartOf="parent"
+-        app:layout_constraintTop_toTopOf="parent" />
+-
+-    <ImageView
+-        android:id="@+id/contactPic"
+-        android:layout_width="70dp"
+-        android:layout_height="70dp"
+-        android:layout_marginTop="12dp"
+-        android:layout_marginEnd="32dp"
+-        android:src="@drawable/user"
+-        app:layout_constraintEnd_toEndOf="parent"
+-        app:layout_constraintTop_toTopOf="@+id/contactName" />
+-
+-    <View
+-        android:layout_width="match_parent"
+-        android:layout_height="5dp"
+-        android:background="@color/white"
+-        app:layout_constraintEnd_toEndOf="parent"
+-        app:layout_constraintStart_toStartOf="parent"
+-        app:layout_constraintTop_toBottomOf="@+id/contactName" />
+-
+-</androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
+Index: app/src/main/java/com/example/projectlfg/object/Message.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/object/Message.kt b/app/src/main/java/com/example/projectlfg/object/Message.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/projectlfg/object/Message.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,14 +0,0 @@
+-package com.example.projectlfg
+-
+-class Message {
+-
+-    var msg: String? = null
+-    var sender: String? = null
+-
+-    constructor()
+-
+-    constructor(msg: String, sender: String){
+-        this.msg = msg
+-        this.sender = sender
+-    }
+-}
+\ No newline at end of file
+Index: app/src/main/res/layout/activity_contact_list.xml
+===================================================================
+diff --git a/app/src/main/res/layout/activity_contact_list.xml b/app/src/main/res/layout/activity_contact_list.xml
+deleted file mode 100644
+--- a/app/src/main/res/layout/activity_contact_list.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,18 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:app="http://schemas.android.com/apk/res-auto"
+-    xmlns:tools="http://schemas.android.com/tools"
+-    android:layout_width="match_parent"
+-    android:layout_height="match_parent"
+-    android:background="@color/black"
+-    tools:context=".ContactListActivity">
+-
+-    <androidx.recyclerview.widget.RecyclerView
+-        android:id="@+id/user_contact_list"
+-        android:layout_width="match_parent"
+-        android:layout_height="match_parent"
+-        tools:layout_editor_absoluteX="26dp"
+-        tools:layout_editor_absoluteY="127dp"
+-        tools:listitem="@layout/contactlistlayout" />
+-
+-</androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/receivemsg.xml
+===================================================================
+diff --git a/app/src/main/res/layout/receivemsg.xml b/app/src/main/res/layout/receivemsg.xml
+deleted file mode 100644
+--- a/app/src/main/res/layout/receivemsg.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,17 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:layout_width="match_parent"
+-    android:layout_height="100dp"
+-    android:background="@color/black">
+-
+-    <TextView
+-        android:id="@+id/receivemsgtext"
+-        android:layout_width="wrap_content"
+-        android:layout_height="wrap_content"
+-        android:layout_alignParentStart="true"
+-        android:layout_margin="5sp"
+-        android:padding="10dp"
+-        android:background="@drawable/rectanglebox"
+-        android:text="testing sent message"
+-        android:textSize="30sp" />
+-</RelativeLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/sentmsg.xml
+===================================================================
+diff --git a/app/src/main/res/layout/sentmsg.xml b/app/src/main/res/layout/sentmsg.xml
+deleted file mode 100644
+--- a/app/src/main/res/layout/sentmsg.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,20 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:layout_width="match_parent"
+-    android:layout_height="100dp"
+-    android:background="@color/black">
+-
+-    <TextView
+-        android:id="@+id/sentmsgtext"
+-        android:layout_width="wrap_content"
+-        android:layout_height="wrap_content"
+-        android:layout_alignParentEnd="true"
+-        android:layout_margin="5sp"
+-        android:padding="10dp"
+-        android:layout_marginTop="10dp"
+-        android:layout_marginEnd="10dp"
+-        android:layout_marginBottom="10dp"
+-        android:background="@drawable/rectanglebox"
+-        android:text="testing sent message"
+-        android:textSize="30sp" />
+-</RelativeLayout>
+\ No newline at end of file
+Index: app/src/main/java/com/example/projectlfg/ChatActivity.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/ChatActivity.kt b/app/src/main/java/com/example/projectlfg/ChatActivity.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/projectlfg/ChatActivity.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,90 +0,0 @@
+-package com.example.projectlfg
+-
+-import androidx.appcompat.app.AppCompatActivity
+-import android.os.Bundle
+-import android.widget.Button
+-import android.widget.EditText
+-import androidx.recyclerview.widget.LinearLayoutManager
+-import androidx.recyclerview.widget.RecyclerView
+-import com.example.projectlfg.MainActivity.Companion.currentUser
+-import com.example.projectlfg.MainActivity.Companion.myref
+-import com.example.projectlfg.databinding.ActivityChatBinding
+-import com.google.firebase.database.DataSnapshot
+-import com.google.firebase.database.DatabaseError
+-import com.google.firebase.database.ValueEventListener
+-
+-class ChatActivity : AppCompatActivity() {
+-
+-    private lateinit var adapter: MsgAdapter
+-    private lateinit var chatView:RecyclerView
+-    private lateinit var messageBox: EditText
+-    private lateinit var sendButton: Button
+-
+-    private lateinit var receiverUID: String
+-    private lateinit var sendRoomID: String
+-    private lateinit var receiveRoomID: String
+-
+-    private lateinit var binding:ActivityChatBinding
+-    private lateinit var msgList: ArrayList<Message>
+-
+-    override fun onCreate(savedInstanceState: Bundle?) {
+-        super.onCreate(savedInstanceState)
+-        binding = ActivityChatBinding.inflate(layoutInflater)
+-        setContentView(binding.root)
+-
+-        val name = intent.getStringExtra("name")
+-        receiverUID = intent.getStringExtra("receiver")!!
+-        sendButton = binding.chatRoomSend
+-        binding.chatRoomName.text = name
+-        messageBox = binding.chatRoomInput
+-        msgList = arrayListOf()
+-
+-        sendRoomID = currentUser!!.uid + receiverUID
+-        receiveRoomID = receiverUID + currentUser!!.uid
+-
+-        chatView = binding.chatRoomMsgs
+-        chatView.layoutManager = LinearLayoutManager(this)
+-        adapter = MsgAdapter(this, msgList)
+-        chatView.adapter = adapter
+-
+-
+-        myref.child("chatroom").child(receiveRoomID).child("msgs")
+-            .addValueEventListener(object: ValueEventListener {
+-                override fun onDataChange(snapshot: DataSnapshot) {
+-                    msgList.clear()
+-
+-                    for(msg in snapshot.children){
+-
+-                        val text = msg.child("msg").getValue()
+-                        val sender = msg.child("sender").getValue()
+-
+-                        println("received msg = " + text)
+-                        msgList.add(Message(text.toString(), sender.toString()))
+-                    }
+-
+-                    adapter.notifyDataSetChanged()
+-                    println(" msg updated")
+-                }
+-
+-                override fun onCancelled(error: DatabaseError) {
+-                    println(error)
+-                }
+-            })
+-
+-
+-        sendButton.setOnClickListener {
+-
+-            val message = Message(messageBox.text.toString(), currentUser!!.uid.toString())
+-
+-            myref.child("chatroom").child(sendRoomID).child("msgs").push()
+-                .setValue(message).addOnCompleteListener {
+-                    myref.child("chatroom").child(receiveRoomID).child("msgs").push()
+-                        .setValue(message)
+-                    println("msg pushed")
+-                }
+-
+-            messageBox.setText("")
+-            messageBox.hint = ""
+-        }
+-    }
+-}
+\ No newline at end of file
+Index: app/src/main/res/layout/activity_chat.xml
+===================================================================
+diff --git a/app/src/main/res/layout/activity_chat.xml b/app/src/main/res/layout/activity_chat.xml
+deleted file mode 100644
+--- a/app/src/main/res/layout/activity_chat.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,61 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:app="http://schemas.android.com/apk/res-auto"
+-    xmlns:tools="http://schemas.android.com/tools"
+-    android:layout_width="match_parent"
+-    android:layout_height="match_parent"
+-    android:background="@color/black"
+-    tools:context=".ChatActivity">
+-
+-    <TextView
+-        android:id="@+id/chatRoomName"
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
+-        android:layout_margin="10sp"
+-        android:text="name holder"
+-        android:textColor="@color/white"
+-        android:textSize="30sp"
+-        app:layout_constraintEnd_toEndOf="parent"
+-        app:layout_constraintStart_toStartOf="parent"
+-        app:layout_constraintTop_toTopOf="parent" />
+-
+-
+-    <View
+-        android:id="@+id/view"
+-        android:layout_width="match_parent"
+-        android:layout_height="10dp"
+-        android:background="@color/white"
+-        app:layout_constraintTop_toBottomOf="@+id/chatRoomName"
+-        tools:layout_editor_absoluteX="-2dp"></View>
+-
+-    <androidx.recyclerview.widget.RecyclerView
+-        android:id="@+id/chatRoomMsgs"
+-        tools:listitem="@layout/sentmsg"
+-        android:layout_width="match_parent"
+-        android:layout_height="580dp"
+-        android:layout_marginBottom="7sp"
+-        app:layout_constraintBottom_toTopOf="@+id/chatRoomInput"
+-        app:layout_constraintEnd_toEndOf="parent"
+-        app:layout_constraintStart_toStartOf="parent"
+-        app:layout_constraintTop_toBottomOf="@+id/view" />
+-
+-    <EditText
+-        android:background="@drawable/rectanglebox"
+-        android:id="@+id/chatRoomInput"
+-        android:hint=" Type your message here!"
+-        android:layout_margin="5dp"
+-        android:layout_width="300dp"
+-        android:layout_height="75dp"
+-        app:layout_constraintBottom_toBottomOf="parent"
+-        app:layout_constraintStart_toStartOf="parent" />
+-
+-    <Button
+-        android:id="@+id/chatRoomSend"
+-        android:text="send"
+-        android:layout_margin="2dp"
+-        android:layout_width="100dp"
+-        android:layout_height="80dp"
+-        app:layout_constraintBottom_toBottomOf="parent"
+-        app:layout_constraintEnd_toEndOf="parent" />
+-
+-</androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
+Index: app/src/main/java/com/example/projectlfg/ContactListActivity.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/ContactListActivity.kt b/app/src/main/java/com/example/projectlfg/ContactListActivity.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/projectlfg/ContactListActivity.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,70 +0,0 @@
+-package com.example.projectlfg
+-
+-import androidx.appcompat.app.AppCompatActivity
+-import android.os.Bundle
+-import androidx.recyclerview.widget.LinearLayoutManager
+-import androidx.recyclerview.widget.RecyclerView
+-import com.example.projectlfg.MainActivity.Companion.currentUser
+-import com.example.projectlfg.databinding.ActivityContactListBinding
+-import com.google.firebase.database.DataSnapshot
+-import com.google.firebase.database.DatabaseError
+-import com.google.firebase.database.DatabaseReference
+-import com.google.firebase.database.ValueEventListener
+-import com.google.firebase.database.ktx.database
+-import com.google.firebase.ktx.Firebase
+-
+-
+-class ContactListActivity : AppCompatActivity() {
+-
+-    private lateinit var binding: ActivityContactListBinding
+-    private lateinit var contactList: ArrayList<UserInformation>
+-    private lateinit var adapter: ContactAdapter
+-    private lateinit var databaseRef: DatabaseReference
+-
+-    private lateinit var senderID: String
+-    private lateinit var receiverID: String
+-
+-    override fun onCreate(savedInstanceState: Bundle?) {
+-        super.onCreate(savedInstanceState)
+-        binding = ActivityContactListBinding.inflate(layoutInflater)
+-        setContentView(binding.root)
+-
+-        // initilize firebase-related content
+-        databaseRef = Firebase.database.reference
+-        contactList = arrayListOf()
+-
+-        adapter = ContactAdapter(this, contactList)
+-        val contactView: RecyclerView = binding.userContactList
+-
+-        contactView.layoutManager = LinearLayoutManager(this)
+-        contactView.adapter = adapter
+-
+-        databaseRef.child("users").addValueEventListener(object: ValueEventListener{
+-            override fun onDataChange(snapshot: DataSnapshot) {
+-                contactList.clear()
+-
+-                // adding users in friend list to contact list view
+-                for(users in snapshot.children){
+-
+-                    if(users.child("uid").value.toString() != currentUser!!.uid){
+-                        val name = users.child("name").value.toString()
+-                        val email = users.child("email").value.toString()
+-                        val uid = users.child("uid").value.toString()
+-
+-                        println(name + " " + email)
+-
+-                        contactList.add(UserInformation(name, email, "", uid))
+-                    }
+-
+-                }
+-                adapter.notifyDataSetChanged()
+-            }
+-
+-            override fun onCancelled(error: DatabaseError) {
+-                println(error)
+-            }
+-
+-        })
+-
+-    }
+-}
+\ No newline at end of file
+Index: app/src/main/java/com/example/projectlfg/object/ContactAdapter.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/object/ContactAdapter.kt b/app/src/main/java/com/example/projectlfg/object/ContactAdapter.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/projectlfg/object/ContactAdapter.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,49 +0,0 @@
+-package com.example.projectlfg
+-
+-import android.content.Context
+-import android.content.Intent
+-import android.view.LayoutInflater
+-import android.view.View
+-import android.view.ViewGroup
+-import android.widget.TextView
+-import androidx.recyclerview.widget.RecyclerView
+-
+-
+-class ContactAdapter(val context: Context, val userList: ArrayList<UserInformation>): RecyclerView.Adapter<ContactAdapter.ContactViewHolder>() {
+-
+-    class ContactViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+-
+-        val contactName: TextView = itemView.findViewById<TextView>(R.id.contactName)
+-
+-    }
+-
+-
+-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
+-
+-        println(" contact creating")
+-
+-        val view = LayoutInflater.from(context).inflate(R.layout.contactlistlayout, parent, false)
+-        return ContactViewHolder(view)
+-    }
+-
+-    override fun onBindViewHolder(holder: ContactViewHolder, position: Int) {
+-
+-        println(" contact binding")
+-
+-        val currentContact = userList[position]
+-        holder.contactName.text = currentContact.name
+-
+-        holder.itemView.setOnClickListener{
+-            val intent = Intent(context, ChatActivity::class.java)
+-            intent.putExtra("name", currentContact.name)
+-            intent.putExtra("receiver", currentContact.uid)
+-            context.startActivity(intent)
+-        }
+-    }
+-
+-
+-
+-    override fun getItemCount(): Int {
+-        return userList.size
+-    }
+-}
+\ No newline at end of file
+Index: app/src/main/java/com/example/projectlfg/object/MsgAdapter.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/object/MsgAdapter.kt b/app/src/main/java/com/example/projectlfg/object/MsgAdapter.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/projectlfg/object/MsgAdapter.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ /dev/null	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
+@@ -1,76 +0,0 @@
+-package com.example.projectlfg
+-
+-import android.content.Context
+-import android.view.LayoutInflater
+-import android.view.View
+-import android.view.ViewGroup
+-import android.widget.TextView
+-import androidx.recyclerview.widget.RecyclerView
+-import com.example.projectlfg.MainActivity.Companion.authenticator
+-
+-class MsgAdapter(val context: Context, val msgList: ArrayList<Message>): RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+-
+-
+-    class SentMsgHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+-        val msg = itemView.findViewById<TextView>(R.id.sentmsgtext)
+-    }
+-
+-    class ReceiveMsgHolder(itemView: View): RecyclerView.ViewHolder(itemView){
+-        val msg = itemView.findViewById<TextView>(R.id.receivemsgtext)
+-    }
+-
+-    // return proper view type to determin sent/receive msg type
+-    override fun getItemViewType(position: Int): Int {
+-
+-        val currentTxt = msgList[position]
+-
+-        // sent msg
+-        if(authenticator.currentUser!!.uid == currentTxt.sender){
+-            return 1
+-
+-        //  receive msg
+-        }
+-        return 2
+-    }
+-
+-
+-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+-
+-        lateinit var view: View
+-
+-        println("creating view holder")
+-
+-        // if it's a sent msg
+-        if(viewType == 1){
+-            view = LayoutInflater.from(context).inflate(R.layout.sentmsg, parent, false)
+-            return SentMsgHolder(view)
+-        }else{
+-            view = LayoutInflater.from(context).inflate(R.layout.receivemsg, parent, false)
+-            return ReceiveMsgHolder(view)
+-        }
+-    }
+-
+-
+-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+-
+-        val currentTxt = msgList[position]
+-
+-        println("binding view holder")
+-
+-        // if it's a sent msg
+-        if(holder.javaClass == SentMsgHolder::class.java){
+-            val viewHolder = holder as SentMsgHolder
+-            holder.msg.text = currentTxt.msg
+-
+-        // if it's a receive msg
+-        }else{
+-            val viewHolder = holder as ReceiveMsgHolder
+-            holder.msg.text = currentTxt.msg
+-        }
+-    }
+-
+-
+-    override fun getItemCount(): Int {
+-        return msgList.size
+-    }
+-}
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"DesignSurface\">\n    <option name=\"filePathToZoomLevelMap\">\n      <map>\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable-v24/ic_launcher_foreground.xml\" value=\"0.1\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/circlebox.xml\" value=\"0.1\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/ic_launcher_background.xml\" value=\"0.1\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/rectangle.xml\" value=\"0.1\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/rectanglebox.xml\" value=\"0.1\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_chat.xml\" value=\"0.1796875\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_contact_list.xml\" value=\"0.1796875\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_log_in.xml\" value=\"0.1796875\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_main.xml\" value=\"0.1796875\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_main_menu.xml\" value=\"0.14666666666666667\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_register.xml\" value=\"0.1796875\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_register2.xml\" value=\"0.1\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/contactlistlayout.xml\" value=\"0.16666666666666666\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/receivemsg.xml\" value=\"0.17864583333333334\" />\n        <entry key=\"..\\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/sentmsg.xml\" value=\"0.17864583333333334\" />\n        <entry key=\"app/src/main/res/drawable/circlebox.xml\" value=\"0.163\" />\n        <entry key=\"app/src/main/res/drawable/rectanglebox.xml\" value=\"0.1475\" />\n        <entry key=\"app/src/main/res/layout/activity_log_in.xml\" value=\"0.25\" />\n        <entry key=\"app/src/main/res/layout/activity_register.xml\" value=\"0.21158484859742982\" />\n      </map>\n    </option>\n  </component>\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_11\" default=\"true\" project-jdk-name=\"Android Studio default JDK\" project-jdk-type=\"JavaSDK\">\n    <output url=\"file://$PROJECT_DIR$/build/classes\" />\n  </component>\n  <component name=\"ProjectType\">\n    <option name=\"id\" value=\"Android\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/.idea/misc.xml	(date 1669782864912)
+@@ -3,29 +3,27 @@
+   <component name="DesignSurface">
+     <option name="filePathToZoomLevelMap">
+       <map>
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/circlebox.xml" value="0.1" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/rectangle.xml" value="0.1" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/drawable/rectanglebox.xml" value="0.1" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_chat.xml" value="0.1796875" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_contact_list.xml" value="0.1796875" />
++        <entry key="../../../../../layout/custom_preview.xml" value="0.1" />
+         <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_log_in.xml" value="0.1796875" />
+         <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_main.xml" value="0.1796875" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_main_menu.xml" value="0.14666666666666667" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_register.xml" value="0.1796875" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/activity_register2.xml" value="0.1" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/contactlistlayout.xml" value="0.16666666666666666" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/receivemsg.xml" value="0.17864583333333334" />
+-        <entry key="..\:/AndroidStudioProjects/projectLFG/app/src/main/res/layout/sentmsg.xml" value="0.17864583333333334" />
+         <entry key="app/src/main/res/drawable/circlebox.xml" value="0.163" />
+         <entry key="app/src/main/res/drawable/rectanglebox.xml" value="0.1475" />
++        <entry key="app/src/main/res/layout/activity_add_event.xml" value="0.18931159420289856" />
++        <entry key="app/src/main/res/layout/activity_event_history_row.xml" value="0.18931159420289856" />
++        <entry key="app/src/main/res/layout/activity_event_info.xml" value="0.18931159420289856" />
++        <entry key="app/src/main/res/layout/activity_events_history.xml" value="0.18931159420289856" />
+         <entry key="app/src/main/res/layout/activity_log_in.xml" value="0.25" />
++        <entry key="app/src/main/res/layout/activity_main.xml" value="0.18931159420289856" />
++        <entry key="app/src/main/res/layout/activity_main_menu.xml" value="0.18931159420289856" />
+         <entry key="app/src/main/res/layout/activity_register.xml" value="0.21158484859742982" />
++        <entry key="app/src/main/res/layout/activity_setting_fragment.xml" value="0.18931159420289856" />
++        <entry key="app/src/main/res/layout/activity_user.xml" value="0.18931159420289856" />
++        <entry key="app/src/main/res/layout/activity_user_setting.xml" value="0.3375" />
++        <entry key="app/src/main/res/xml/user_preference.xml" value="0.260595703125" />
+       </map>
+     </option>
+   </component>
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+     <output url="file://$PROJECT_DIR$/build/classes" />
+   </component>
+   <component name="ProjectType">
+Index: app/src/main/java/com/example/projectlfg/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.projectlfg\n\nimport android.content.Intent\nimport androidx.appcompat.app.AppCompatActivity\nimport android.os.Bundle\nimport android.text.TextUtils\nimport android.widget.*\nimport com.example.projectlfg.Util.popUp\nimport com.example.projectlfg.databinding.ActivityMainBinding\nimport com.google.firebase.auth.FirebaseAuth\nimport com.google.firebase.database.DatabaseReference\nimport com.google.firebase.database.FirebaseDatabase\nimport com.google.firebase.database.ktx.database\nimport com.google.firebase.ktx.Firebase\n\nclass MainActivity : AppCompatActivity() {\n\n    private lateinit var emailTextEdit: EditText\n    private lateinit var passwordTextEdit: EditText\n    private lateinit var logoView: ImageView\n\n    private lateinit var loginButton: Button\n    private lateinit var registerButton: TextView\n\n    private lateinit var binding: ActivityMainBinding\n\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        binding = ActivityMainBinding.inflate(layoutInflater)\n        val view = binding.root\n        setContentView(view)\n\n\n        // get view\n        emailTextEdit = binding.emailtextview\n        passwordTextEdit = binding.passwordtextview\n        loginButton = binding.LoginButton\n        registerButton = binding.registerlink\n\n        // firebase init ()\n        authenticator = FirebaseAuth.getInstance()\n        database  = Firebase.database;\n        myref = database.reference;\n\n        // UI init\n        logoView = findViewById(R.id.mainMenuLogo)\n        logoView.setImageResource(R.drawable.logo)\n\n        loginButton.setOnClickListener {\n            if(!TextUtils.isEmpty(emailTextEdit.text.toString()) && !TextUtils.isEmpty(passwordTextEdit.text.toString())){\n                logIn(emailTextEdit.text.toString(), passwordTextEdit.text.toString())\n            }else{\n                popUp(this, \"please fill in user information\")\n            }\n        }\n\n        registerButton.setOnClickListener {\n            // Open register activity\n            val intent = Intent(this, RegisterActivity::class.java)\n            startActivity(intent)\n        }\n    }\n\n    private fun logIn(email: String, password: String){\n        authenticator.signInWithEmailAndPassword(email,password).addOnCompleteListener (this){\n            if(it.isSuccessful){\n                // load main menu\n\n                // set currentUser information\n                myref.child(\"users\").child(authenticator.currentUser!!.uid).get().addOnSuccessListener {\n                    currentUser = UserInformation(it.child(\"name\").value.toString(), it.child(\"email\").value.toString(), it.child(\"uid\").value.toString(), it.child(\"uid\").value.toString())\n                    popUp(this, \"Welcome back, \" + it.child(\"name\").value.toString())\n                    //println(authenticator.currentUser!!.uid)\n                    //println(currentUser!!.name)\n                    //println(currentUser!!.email)\n                }.addOnFailureListener {\n\n                }\n\n\n                val startMenu = Intent(this,MainMenuActivity::class.java)\n                startActivity(startMenu)\n            }else{\n                popUp(this, \"log in fail, please try again\")\n            }\n        }\n    }\n\n    companion object{\n\n        //authentication\n        lateinit var authenticator: FirebaseAuth\n\n        //database\n        lateinit var database: FirebaseDatabase\n\n        //ref\n        lateinit var myref : DatabaseReference\n\n        var currentUser: UserInformation? = UserInformation()\n    }\n\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/MainActivity.kt b/app/src/main/java/com/example/projectlfg/MainActivity.kt
+--- a/app/src/main/java/com/example/projectlfg/MainActivity.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/java/com/example/projectlfg/MainActivity.kt	(date 1669782991523)
+@@ -1,8 +1,11 @@
+ package com.example.projectlfg
+ 
+ import android.content.Intent
+-import androidx.appcompat.app.AppCompatActivity
+ import android.os.Bundle
++import android.view.View
++import android.widget.Button
++import androidx.appcompat.app.AppCompatActivity
++import android.text.Layout
+ import android.text.TextUtils
+ import android.widget.*
+ import com.example.projectlfg.Util.popUp
+@@ -14,9 +17,13 @@
+ import com.google.firebase.ktx.Firebase
+ 
+ class MainActivity : AppCompatActivity() {
++    // To be used possibly with screen updates and login
++    private var loginMade = true
+ 
+     private lateinit var emailTextEdit: EditText
+     private lateinit var passwordTextEdit: EditText
++    private lateinit var nameLayout: View
++    private lateinit var nameTextEdit: EditText
+     private lateinit var logoView: ImageView
+ 
+     private lateinit var loginButton: Button
+@@ -24,6 +31,14 @@
+ 
+     private lateinit var binding: ActivityMainBinding
+ 
++    //authentication
++    private lateinit var authenticator: FirebaseAuth
++
++    //database
++    private lateinit var database: FirebaseDatabase
++
++    //ref
++    private lateinit var myref : DatabaseReference
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
+@@ -37,8 +52,11 @@
+         passwordTextEdit = binding.passwordtextview
+         loginButton = binding.LoginButton
+         registerButton = binding.registerlink
++        nameLayout = binding.layout0
++        nameTextEdit = binding.nametextview
+ 
+-        // firebase init ()
++
++        // firebase init
+         authenticator = FirebaseAuth.getInstance()
+         database  = Firebase.database;
+         myref = database.reference;
+@@ -46,6 +64,7 @@
+         // UI init
+         logoView = findViewById(R.id.mainMenuLogo)
+         logoView.setImageResource(R.drawable.logo)
++        nameLayout.visibility = View.GONE
+ 
+         loginButton.setOnClickListener {
+             if(!TextUtils.isEmpty(emailTextEdit.text.toString()) && !TextUtils.isEmpty(passwordTextEdit.text.toString())){
+@@ -66,19 +85,6 @@
+         authenticator.signInWithEmailAndPassword(email,password).addOnCompleteListener (this){
+             if(it.isSuccessful){
+                 // load main menu
+-
+-                // set currentUser information
+-                myref.child("users").child(authenticator.currentUser!!.uid).get().addOnSuccessListener {
+-                    currentUser = UserInformation(it.child("name").value.toString(), it.child("email").value.toString(), it.child("uid").value.toString(), it.child("uid").value.toString())
+-                    popUp(this, "Welcome back, " + it.child("name").value.toString())
+-                    //println(authenticator.currentUser!!.uid)
+-                    //println(currentUser!!.name)
+-                    //println(currentUser!!.email)
+-                }.addOnFailureListener {
+-
+-                }
+-
+-
+                 val startMenu = Intent(this,MainMenuActivity::class.java)
+                 startActivity(startMenu)
+             }else{
+@@ -87,18 +93,4 @@
+         }
+     }
+ 
+-    companion object{
+-
+-        //authentication
+-        lateinit var authenticator: FirebaseAuth
+-
+-        //database
+-        lateinit var database: FirebaseDatabase
+-
+-        //ref
+-        lateinit var myref : DatabaseReference
+-
+-        var currentUser: UserInformation? = UserInformation()
+-    }
+-
+ }
+\ No newline at end of file
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>plugins {\n    id 'com.android.application'\n    id 'org.jetbrains.kotlin.android'\n    id 'kotlin-android'\n\n    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'//XD added\n    id 'kotlin-kapt' //XD added\n\n    //for firebase\n    // Add the Google services Gradle plugin\n    id 'com.google.gms.google-services'\n}\n\nandroid {\n    compileSdk 33\n\n    defaultConfig {\n        applicationId \"com.example.projectlfg\"\n        minSdk 26\n        targetSdk 32\n        versionCode 1\n        versionName \"1.0\"\n\n        testInstrumentationRunner \"androidx.test.runner.AndroidJUnitRunner\"\n    }\n\n    //enable view binding\n    buildFeatures{\n        viewBinding true\n    }\n\n    buildTypes {\n        release {\n            minifyEnabled false\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'\n        }\n    }\n    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_1_8\n        targetCompatibility JavaVersion.VERSION_1_8\n    }\n    kotlinOptions {\n        jvmTarget = '1.8'\n    }\n    buildFeatures {\n        viewBinding true\n    }\n}\n\ndependencies {\n    implementation 'androidx.preference:preference:1.2.0'\n    implementation 'androidx.core:core-ktx:1.9.0'\n    implementation 'androidx.appcompat:appcompat:1.5.1'\n    implementation 'com.google.android.material:material:1.7.0'\n    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'\n    implementation 'com.google.android.gms:play-services-maps:18.1.0'\n    implementation 'com.google.firebase:firebase-auth:21.1.0'\n    implementation 'com.google.firebase:firebase-database-ktx:20.1.0'\n    implementation 'com.google.firebase:firebase-storage-ktx:20.1.0'\n    implementation 'com.google.firebase:firebase-database:20.1.0'\n    testImplementation 'junit:junit:4.13.2'\n    androidTestImplementation 'androidx.test.ext:junit:1.1.3'\n    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'\n\n    // Coroutine components\n    implementation \"org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.31\"\n    implementation \"org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1\"\n\n    // Lifecycle components\n    implementation \"androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1\"\n    implementation \"androidx.lifecycle:lifecycle-runtime-ktx:2.5.1\"\n    implementation \"androidx.lifecycle:lifecycle-livedata-ktx:2.5.1\"\n    implementation \"androidx.lifecycle:lifecycle-common-java8:2.5.1\"\n\n    // Room components\n    implementation \"androidx.room:room-ktx:2.4.3\"\n    kapt \"androidx.room:room-compiler:2.4.3\"\n    androidTestImplementation \"androidx.room:room-testing:2.4.3\"\n    //annotationProcessor \"androidx.room:room-compiler:2.4.3\"\n\n\n    // Import the Firebase BoM\n    implementation platform('com.google.firebase:firebase-bom:31.1.0')\n\n    // When using the BoM, don't specify versions in Firebase dependencies\n    implementation 'com.google.firebase:firebase-analytics-ktx'\n\n    implementation 'com.google.firebase:firebase-database-ktx'\n\n    implementation 'com.google.firebase:firebase-storage-ktx'\n\n\n    // TODO: Add the dependencies for Firebase products you want to use\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/build.gradle b/app/build.gradle
+--- a/app/build.gradle	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/build.gradle	(date 1669782864912)
+@@ -2,18 +2,15 @@
+     id 'com.android.application'
+     id 'org.jetbrains.kotlin.android'
+     id 'kotlin-android'
+-
+-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'//XD added
+     id 'kotlin-kapt' //XD added
+ 
+     //for firebase
+     // Add the Google services Gradle plugin
+-    id 'com.google.gms.google-services'
++    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
+ }
+-
++apply plugin: 'com.google.gms.google-services'
+ android {
+     compileSdk 33
+-
+     defaultConfig {
+         applicationId "com.example.projectlfg"
+         minSdk 26
+@@ -42,8 +39,9 @@
+     kotlinOptions {
+         jvmTarget = '1.8'
+     }
++
+     buildFeatures {
+-        viewBinding true
++        viewBinding = true
+     }
+ }
+ 
+@@ -53,11 +51,9 @@
+     implementation 'androidx.appcompat:appcompat:1.5.1'
+     implementation 'com.google.android.material:material:1.7.0'
+     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+-    implementation 'com.google.android.gms:play-services-maps:18.1.0'
+     implementation 'com.google.firebase:firebase-auth:21.1.0'
+     implementation 'com.google.firebase:firebase-database-ktx:20.1.0'
+     implementation 'com.google.firebase:firebase-storage-ktx:20.1.0'
+-    implementation 'com.google.firebase:firebase-database:20.1.0'
+     testImplementation 'junit:junit:4.13.2'
+     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+@@ -86,9 +82,10 @@
+     implementation 'com.google.firebase:firebase-analytics-ktx'
+ 
+     implementation 'com.google.firebase:firebase-database-ktx'
+-
++    implementation 'com.firebaseui:firebase-ui-storage:7.2.0'
+     implementation 'com.google.firebase:firebase-storage-ktx'
+ 
+-
++    implementation 'com.google.android.gms:play-services-maps:18.1.0'
++    implementation 'com.google.android.gms:play-services-location:16.0.0'
+     // TODO: Add the dependencies for Firebase products you want to use
+ }
+\ No newline at end of file
+Index: app/src/main/java/com/example/projectlfg/object/Util.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.projectlfg\n\nimport android.Manifest\nimport android.app.Activity\nimport android.content.Context\nimport android.content.pm.PackageManager\nimport android.os.Build\nimport android.widget.Toast\nimport androidx.core.app.ActivityCompat\nimport androidx.core.content.ContextCompat\n\n object Util {\n    fun checkPermissions(activity: Activity?) {\n        if (Build.VERSION.SDK_INT < 23) return\n        if (ContextCompat.checkSelfPermission(activity!!, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED\n            || ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED\n            || ContextCompat.checkSelfPermission(activity,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {\n            ActivityCompat.requestPermissions(activity, arrayOf(\n                Manifest.permission.WRITE_EXTERNAL_STORAGE,\n                Manifest.permission.CAMERA,\n                Manifest.permission.ACCESS_FINE_LOCATION\n            ), 0)\n        }\n    }\n\n     fun popUp(context: Context, text: String){\n         Toast.makeText(context, text, Toast.LENGTH_SHORT).show()\n     }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/object/Util.kt b/app/src/main/java/com/example/projectlfg/object/Util.kt
+--- a/app/src/main/java/com/example/projectlfg/object/Util.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/java/com/example/projectlfg/object/Util.kt	(date 1669782864914)
+@@ -13,13 +13,8 @@
+     fun checkPermissions(activity: Activity?) {
+         if (Build.VERSION.SDK_INT < 23) return
+         if (ContextCompat.checkSelfPermission(activity!!, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+-            || ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+-            || ContextCompat.checkSelfPermission(activity,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+-            ActivityCompat.requestPermissions(activity, arrayOf(
+-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+-                Manifest.permission.CAMERA,
+-                Manifest.permission.ACCESS_FINE_LOCATION
+-            ), 0)
++            || ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
++            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA), 0)
+         }
+     }
+ 
+Index: app/src/main/java/com/example/projectlfg/object/UserInformation.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.projectlfg\n\nclass UserInformation {\n\n    // class instead of data for firebase operation\n\n    var name: String? = \"\"\n    var email: String? = \"\"\n    var imageuri: String? = \"\"\n    var uid: String? = \"\"\n    var friendList: ArrayList<String>? = null\n\n    constructor()\n\n    constructor(name: String, email: String, uri: String, uid:String) {\n        this.name = name\n        this.email = email\n        this.imageuri = uri\n        this.uid = uid\n    }\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/object/UserInformation.kt b/app/src/main/java/com/example/projectlfg/object/UserInformation.kt
+--- a/app/src/main/java/com/example/projectlfg/object/UserInformation.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/java/com/example/projectlfg/object/UserInformation.kt	(date 1669782797365)
+@@ -1,22 +1,9 @@
+ package com.example.projectlfg
+ 
+-class UserInformation {
+-
+-    // class instead of data for firebase operation
++data class UserInformation(
+ 
+-    var name: String? = ""
+-    var email: String? = ""
+-    var imageuri: String? = ""
+-    var uid: String? = ""
+-    var friendList: ArrayList<String>? = null
++    var name:String = "",
++    var email:String = "",
++    var imageuri: String = ""
+ 
+-    constructor()
+-
+-    constructor(name: String, email: String, uri: String, uid:String) {
+-        this.name = name
+-        this.email = email
+-        this.imageuri = uri
+-        this.uid = uid
+-    }
+-
+-}
++)
+Index: app/src/main/res/layout/activity_main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<RelativeLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:background=\"@color/black\"\n    android:paddingTop=\"50dp\"\n    android:orientation=\"vertical\"\n    tools:context=\".MainActivity\">\n\n    <ImageView\n        android:layout_height=\"200dp\"\n        android:layout_width=\"match_parent\"\n        android:paddingLeft=\"10dp\"\n        android:paddingRight=\"10dp\"\n        android:id=\"@+id/mainMenuLogo\">\n    </ImageView>\n\n\n\n\n    <LinearLayout\n        android:layout_width=\"match_parent\"\n        android:orientation=\"vertical\"\n        android:paddingLeft=\"10dp\"\n        android:paddingRight=\"10dp\"\n        android:id=\"@+id/layout1\"\n        android:layout_below=\"@id/mainMenuLogo\"\n        android:layout_height=\"wrap_content\">\n        <TextView\n            android:layout_width=\"match_parent\"\n            android:text=\"Email\"\n            android:gravity=\"center_vertical\"\n            android:paddingLeft=\"20dp\"\n            android:textColor=\"@color/white\"\n            android:textSize=\"20dp\"\n            android:layout_height=\"50dp\">\n        </TextView>\n        <EditText\n            android:maxLines=\"1\"\n            android:paddingLeft=\"5dp\"\n            android:layout_width=\"match_parent\"\n            android:id=\"@+id/emailtextview\"\n            android:background=\"@drawable/rectanglebox\"\n            android:layout_height=\"35dp\">\n\n        </EditText>\n    </LinearLayout>\n\n    <LinearLayout\n        android:layout_width=\"match_parent\"\n        android:orientation=\"vertical\"\n        android:paddingLeft=\"10dp\"\n        android:paddingRight=\"10dp\"\n        android:layout_below=\"@id/layout1\"\n        android:id=\"@+id/layout2\"\n        android:layout_height=\"wrap_content\">\n        <TextView\n            android:layout_width=\"match_parent\"\n            android:text=\"Password\"\n            android:gravity=\"center_vertical\"\n            android:paddingLeft=\"20dp\"\n            android:textColor=\"@color/white\"\n            android:textSize=\"20dp\"\n            android:layout_height=\"50dp\">\n        </TextView>\n        <EditText\n            android:inputType=\"textPassword\"\n            android:paddingLeft=\"5dp\"\n            android:layout_width=\"match_parent\"\n            android:background=\"@drawable/rectanglebox\"\n            android:id=\"@+id/passwordtextview\"\n            android:layout_height=\"35dp\">\n        </EditText>\n    </LinearLayout>\n\n    <LinearLayout\n        android:layout_width=\"match_parent\"\n        android:layout_below=\"@id/layout2\"\n        android:layout_marginTop=\"10dp\"\n        android:gravity=\"center\"\n        android:id=\"@+id/LoginButtonLayout\"\n        android:layout_height=\"40dp\">\n        <Button\n            android:layout_width=\"200dp\"\n            android:text=\"Login\"\n            android:id=\"@+id/LoginButton\"\n            android:layout_height=\"match_parent\">\n        </Button>\n    </LinearLayout>\n\n\n    <LinearLayout\n        android:layout_width=\"match_parent\"\n        android:layout_below=\"@id/LoginButtonLayout\"\n        android:layout_marginTop=\"10dp\"\n        android:gravity=\"center\"\n        android:layout_height=\"40dp\">\n        <TextView\n            android:layout_height=\"match_parent\"\n            android:layout_width=\"match_parent\"\n            android:gravity=\"center\"\n            android:textColor=\"#ffffff\"\n            android:id=\"@+id/registerlink\"\n            android:textSize=\"20dp\"\n            android:text =\"Don't have an account? Register\"\n            >\n        </TextView>\n    </LinearLayout>\n\n</RelativeLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/activity_main.xml b/app/src/main/res/layout/activity_main.xml
+--- a/app/src/main/res/layout/activity_main.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/res/layout/activity_main.xml	(date 1669782864914)
+@@ -17,16 +17,40 @@
+         android:id="@+id/mainMenuLogo">
+     </ImageView>
+ 
+-
+-
+-
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:orientation="vertical"
+         android:paddingLeft="10dp"
+         android:paddingRight="10dp"
+-        android:id="@+id/layout1"
++        android:id="@+id/layout0"
+         android:layout_below="@id/mainMenuLogo"
++        android:layout_height="wrap_content">
++        <TextView
++            android:layout_width="match_parent"
++            android:text="Name"
++            android:gravity="center_vertical"
++            android:paddingLeft="20dp"
++            android:textColor="@color/white"
++            android:textSize="20dp"
++            android:layout_height="50dp">
++        </TextView>
++        <EditText
++            android:paddingLeft="5dp"
++            android:layout_width="match_parent"
++            android:id="@+id/nametextview"
++            android:background="@drawable/rectanglebox"
++            android:layout_height="35dp">
++        </EditText>
++    </LinearLayout>
++
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:orientation="vertical"
++        android:paddingLeft="10dp"
++        android:paddingRight="10dp"
++        android:id="@+id/layout1"
++        android:layout_below="@id/layout0"
+         android:layout_height="wrap_content">
+         <TextView
+             android:layout_width="match_parent"
+@@ -38,7 +62,6 @@
+             android:layout_height="50dp">
+         </TextView>
+         <EditText
+-            android:maxLines="1"
+             android:paddingLeft="5dp"
+             android:layout_width="match_parent"
+             android:id="@+id/emailtextview"
+Index: app/src/main/java/com/example/projectlfg/UserInfoActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.projectlfg\n\nimport android.app.Activity\nimport android.content.Context\nimport android.content.Intent\nimport android.content.SharedPreferences\nimport android.net.Uri\nimport android.os.Bundle\nimport android.text.TextUtils\nimport android.util.Log\nimport android.widget.Button\nimport android.widget.EditText\nimport android.widget.ImageView\nimport android.widget.Toast\nimport androidx.activity.result.ActivityResult\nimport androidx.activity.result.ActivityResultLauncher\nimport androidx.activity.result.contract.ActivityResultContracts\nimport androidx.activity.result.registerForActivityResult\nimport androidx.appcompat.app.AppCompatActivity\n//import com.bumptech.glide.Glide\nimport com.example.projectlfg.databinding.ActivityUserBinding\nimport com.google.firebase.auth.FirebaseAuth\nimport com.google.firebase.database.DatabaseReference\nimport com.google.firebase.database.FirebaseDatabase\nimport com.google.firebase.storage.FirebaseStorage\nimport java.util.*\nimport kotlin.collections.HashMap\n\nclass UserInfoActivity:AppCompatActivity() {\n    private lateinit var binding:ActivityUserBinding;\n\n\n    private lateinit var UserNameField:EditText;\n    private lateinit var passwordfield:EditText\n    private lateinit var emailfield:EditText;\n    private lateinit var SaveButton : Button;\n    private lateinit var UserImgView:ImageView;\n    private lateinit var SelectImgButton:Button;\n    private lateinit var imguri: Uri;\n\n    private lateinit var galleryResult:ActivityResultLauncher<Intent>;\n    private lateinit var sharedPreferences: SharedPreferences;\n    private lateinit var db  : DatabaseReference;\n    private  var newImageSelected = false;\n\n    companion object{\n        val NEW_IMAGE_SELECTED = \"newImageSelected\"\n    }\n\n    override fun onSaveInstanceState(outState: Bundle) {\n        super.onSaveInstanceState(outState)\n        outState.putBoolean(NEW_IMAGE_SELECTED,newImageSelected);\n    }\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        binding = ActivityUserBinding.inflate(layoutInflater);\n        val view = binding.root;\n        setContentView(view);\n\n        UserNameField = view.findViewById(R.id.UserNameInfo)\n        emailfield = view.findViewById(R.id.UserEmailInfo)\n         SaveButton = view.findViewById(R.id.SaveButton);\n        SelectImgButton = view.findViewById(R.id.selectimgbutton);\n        UserImgView = view.findViewById(R.id.userimgview)\n        passwordfield= view.findViewById(R.id.InsertUserPasswordInfo);\n\n        if(savedInstanceState != null){\n            newImageSelected = savedInstanceState.getBoolean(NEW_IMAGE_SELECTED);\n        }\n\n        galleryResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult(),{\n            if(it.resultCode == Activity.RESULT_OK){\n\n                   imguri = it.data!!.data as Uri;\n                newImageSelected = true;\n                 UserImgView.setImageURI(imguri);\n            }\n        })\n\n        SelectImgButton.setOnClickListener {\n            val selectImgIntent = Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)\n            galleryResult.launch(selectImgIntent);\n        }\n\n\n        db= FirebaseDatabase.getInstance().reference;\n\n\n        val curruser = FirebaseAuth.getInstance().currentUser;\n//        UserNameField.text = curruser.email;\n        if (curruser != null) {\n            val currid = curruser.uid;\n            db.child(\"users\").child(currid).get().addOnSuccessListener {\n//                val tmp = it.getValue(Map::class.java) as Map<String,String>;\n\n                val tmp = it.value as HashMap<String,String>;\n                UserNameField.setText(tmp.get(\"name\"))\n                emailfield.setText(tmp.get(\"email\"))\n\n                val imgURL = tmp.get(\"imageuri\")\n//                Glide.with(this).load(imgURL).into(UserImgView);\n            }.addOnFailureListener {\n                Log.e(\"firebase\",\"error getting data\")\n            }\n        };\n\n        SaveButton.setOnClickListener {\n            val newName = UserNameField.text.toString()\n            val newEmail = emailfield.text.toString()\n            db.child(\"users\").child(curruser!!.uid).child(\"name\").setValue(newName).addOnSuccessListener {\n                Toast.makeText(this,\"Name is Saved\",Toast.LENGTH_LONG)\n            };\n            db.child(\"users\").child(curruser!!.uid).child(\"email\").setValue(newEmail).addOnSuccessListener {\n                Toast.makeText(this,\"Email is Saved\",Toast.LENGTH_LONG)\n            };\n\n            val user = FirebaseAuth.getInstance().currentUser\n            user!!.updateEmail(newEmail);\n            if(!TextUtils.isEmpty(passwordfield.text))\n                user!!.updatePassword(passwordfield.text.toString())\n            if(newImageSelected){\n                val tmpid = UUID.randomUUID()\n                val storageref = FirebaseStorage.getInstance().reference.child(\"images/${tmpid}\")\n                storageref.putFile(imguri).continueWith {\n                    if(!it.isSuccessful){\n                        it.exception?.let{\n                            throw it\n                        }\n                    }\n                    storageref.downloadUrl\n                }.addOnCompleteListener{\n                    if(it.isSuccessful){\n                        db.child(\"users\").child(curruser!!.uid).child(\"imageuri\").setValue(it.result);\n                    }\n                }\n            }\n            sharedPreferences = getSharedPreferences(\"sharedpref\", Context.MODE_PRIVATE)\n            val editor = sharedPreferences.edit();\n            editor.putString(\"name\",newName);\n            editor.putString(\"email\",newEmail);\n\n        }\n\n\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/UserInfoActivity.kt b/app/src/main/java/com/example/projectlfg/UserInfoActivity.kt
+--- a/app/src/main/java/com/example/projectlfg/UserInfoActivity.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/java/com/example/projectlfg/UserInfoActivity.kt	(date 1669782864914)
+@@ -17,7 +17,7 @@
+ import androidx.activity.result.contract.ActivityResultContracts
+ import androidx.activity.result.registerForActivityResult
+ import androidx.appcompat.app.AppCompatActivity
+-//import com.bumptech.glide.Glide
++import com.bumptech.glide.Glide
+ import com.example.projectlfg.databinding.ActivityUserBinding
+ import com.google.firebase.auth.FirebaseAuth
+ import com.google.firebase.database.DatabaseReference
+@@ -99,7 +99,7 @@
+                 emailfield.setText(tmp.get("email"))
+ 
+                 val imgURL = tmp.get("imageuri")
+-//                Glide.with(this).load(imgURL).into(UserImgView);
++                Glide.with(this).load(imgURL).into(UserImgView);
+             }.addOnFailureListener {
+                 Log.e("firebase","error getting data")
+             }
+Index: app/src/main/res/layout/activity_register.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<LinearLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:layout_width=\"match_parent\"\n    android:background=\"@color/black\"\n    android:orientation=\"vertical\"\n    android:paddingLeft=\"10dp\"\n    android:paddingRight=\"10dp\"\n    android:paddingTop=\"20dp\"\n    android:layout_height=\"match_parent\">\n\n\n\n    <LinearLayout\n        android:layout_height=\"wrap_content\"\n        android:layout_width=\"match_parent\"\n        android:orientation=\"vertical\"\n        android:gravity=\"center\"\n        >\n\n        <ImageView\n            android:layout_height=\"200dp\"\n            android:layout_width=\"200dp\"\n            android:id=\"@+id/UserImageView\"\n            android:src=\"@drawable/user\"\n            >\n\n        </ImageView>\n\n        <Button\n            android:layout_width=\"200dp\"\n            android:layout_height=\"50dp\"\n            android:text=\"Select Image\"\n            android:id=\"@+id/RegisterImgButton\"\n            >\n\n        </Button>\n\n    </LinearLayout>\n\n    <TextView\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"40dp\"\n        android:paddingLeft= \"10dp\"\n        android:text=\"Name\"\n        android:textSize=\"20dp\"\n        android:textColor=\"#ffffff\"\n        android:layout_marginTop=\"15dp\"\n        android:gravity=\"center_vertical\"\n        >\n    </TextView>\n\n    <EditText\n        android:layout_width=\"match_parent\"\n        android:background=\"@drawable/rectanglebox\"\n        android:maxLines=\"1\"\n        android:paddingLeft = \"10dp\"\n        android:inputType=\"text\"\n        android:textColor=\"@color/black\"\n        android:id=\"@+id/RegisterName\"\n        android:layout_height=\"35dp\">\n    </EditText>\n    <TextView\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"40dp\"\n        android:paddingLeft= \"10dp\"\n        android:text=\"Email\"\n        android:textSize=\"20dp\"\n        android:textColor=\"#ffffff\"\n        android:gravity=\"center_vertical\"\n        >\n    </TextView>\n\n    <EditText\n        android:layout_width=\"match_parent\"\n        android:background=\"@drawable/rectanglebox\"\n        android:maxLines=\"1\"\n        android:paddingLeft = \"10dp\"\n        android:inputType=\"textEmailAddress\"\n        android:textColor=\"@color/black\"\n        android:id=\"@+id/RegisterEmail\"\n        android:layout_height=\"35dp\">\n    </EditText>\n    <TextView\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"40dp\"\n        android:paddingLeft= \"10dp\"\n        android:text=\"Password\"\n        android:textSize=\"20dp\"\n        android:textColor=\"#ffffff\"\n        android:gravity=\"center_vertical\"\n        >\n    </TextView>\n\n    <EditText\n        android:layout_width=\"match_parent\"\n        android:background=\"@drawable/rectanglebox\"\n        android:maxLines=\"1\"\n        android:paddingLeft = \"10dp\"\n        android:inputType=\"textPassword\"\n        android:textColor=\"@color/black\"\n        android:id=\"@+id/RegisterPassword\"\n        android:layout_height=\"35dp\">\n    </EditText>\n\n    <LinearLayout\n        android:layout_width = \"match_parent\"\n        android:layout_marginTop=\"10dp\"\n        android:layout_height=\"40dp\"\n        android:gravity=\"center\"\n        >\n\n        <Button\n            android:layout_height=\"match_parent\"\n            android:layout_width=\"120dp\"\n            android:text=\"Register\"\n            android:id=\"@+id/RegisterButton\"\n            >\n\n        </Button>\n\n    </LinearLayout>\n\n\n</LinearLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/activity_register.xml b/app/src/main/res/layout/activity_register.xml
+--- a/app/src/main/res/layout/activity_register.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/res/layout/activity_register.xml	(date 1669782864915)
+@@ -55,7 +55,6 @@
+         android:maxLines="1"
+         android:paddingLeft = "10dp"
+         android:inputType="text"
+-        android:textColor="@color/black"
+         android:id="@+id/RegisterName"
+         android:layout_height="35dp">
+     </EditText>
+@@ -76,7 +75,6 @@
+         android:maxLines="1"
+         android:paddingLeft = "10dp"
+         android:inputType="textEmailAddress"
+-        android:textColor="@color/black"
+         android:id="@+id/RegisterEmail"
+         android:layout_height="35dp">
+     </EditText>
+@@ -97,7 +95,6 @@
+         android:maxLines="1"
+         android:paddingLeft = "10dp"
+         android:inputType="textPassword"
+-        android:textColor="@color/black"
+         android:id="@+id/RegisterPassword"
+         android:layout_height="35dp">
+     </EditText>

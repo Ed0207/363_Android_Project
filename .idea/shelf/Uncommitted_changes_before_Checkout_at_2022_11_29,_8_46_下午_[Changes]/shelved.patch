@@ -1,0 +1,40 @@
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    package=\"com.example.projectlfg\">\n\n    <uses-permission android:name=\"android.permission.CAMERA\" />\n    <uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\" />\n    <uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\" />\n\n    <application\n        android:allowBackup=\"true\"\n        android:dataExtractionRules=\"@xml/data_extraction_rules\"\n        android:fullBackupContent=\"@xml/backup_rules\"\n        android:icon=\"@mipmap/ic_launcher\"\n        android:label=\"@string/app_name\"\n        android:roundIcon=\"@mipmap/ic_launcher_round\"\n        android:supportsRtl=\"true\"\n        android:theme=\"@style/Theme.ProjectLFG\"\n        tools:targetApi=\"31\">\n        <activity\n            android:name=\".ChatActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".ContactListActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".RegisterActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".MainMenuActivity\"\n            android:exported=\"false\" />\n        <activity\n            android:name=\".MainActivity\"\n            android:exported=\"true\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\" />\n\n                <category android:name=\"android.intent.category.LAUNCHER\" />\n            </intent-filter>\n        </activity>\n    </application>\n\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/AndroidManifest.xml	(date 1669783524652)
+@@ -30,6 +30,10 @@
+             android:name=".MainMenuActivity"
+             android:exported="false" />
+         <activity
++            android:name=".MapsActivity"
++            android:exported="false"
++            android:label="@string/title_activity_maps" />
++        <activity
+             android:name=".MainActivity"
+             android:exported="true">
+             <intent-filter>
+Index: app/src/main/java/com/example/projectlfg/MainMenuActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.projectlfg\n\nimport android.content.Intent\nimport androidx.appcompat.app.AppCompatActivity\nimport android.os.Bundle\nimport android.view.View\nimport android.widget.ImageView\n\nclass MainMenuActivity : AppCompatActivity(), View.OnClickListener{\n\n    private lateinit var findActivityImageButton: ImageView\n    private lateinit var scheduledActivityImageButton: ImageView\n    private lateinit var contactListImageButton: ImageView\n    private lateinit var configImageButton: ImageView\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        setContentView(R.layout.activity_main_menu)\n\n        // init image view\n        findActivityImageButton         = findViewById(R.id.findActivityImageButton)\n        findActivityImageButton.setOnClickListener(this)\n\n        scheduledActivityImageButton    = findViewById(R.id.scheduleActivityImageButton)\n        scheduledActivityImageButton.setOnClickListener(this)\n\n        contactListImageButton          = findViewById(R.id.contactListImageButton)\n        contactListImageButton.setOnClickListener(this)\n\n        configImageButton               = findViewById(R.id.configImageButton)\n        configImageButton.setOnClickListener(this)\n\n    }\n\n    override fun onClick(v: View?) {\n\n        when(v){\n            contactListImageButton-> startActivity(Intent(this, ContactListActivity::class.java))\n            else->println(\"click\")\n        }\n    }\n\n\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt b/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt
+--- a/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt	(revision 2d94682056fe63ded88282cf50f9600db0cb0501)
++++ b/app/src/main/java/com/example/projectlfg/MainMenuActivity.kt	(date 1669783397785)
+@@ -36,7 +36,7 @@
+ 
+         when(v){
+             contactListImageButton-> startActivity(Intent(this, ContactListActivity::class.java))
+-            else->println("click")
++            findActivityImageButton->startActivity(Intent(this, MapsActivity::class.java))
+         }
+     }
+ 

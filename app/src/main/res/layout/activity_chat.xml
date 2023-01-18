@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ChatActivity">
+
+    <TextView
+        android:id="@+id/chatRoomName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10sp"
+        android:text="name holder"
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/chatRoomName"
+        tools:layout_editor_absoluteX="-2dp" />
+
+
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="550dp"
+            android:maxHeight="400dp"
+            app:layout_constraintTop_toBottomOf="@+id/view"
+            app:layout_constraintBottom_toTopOf="@+id/LLtemp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/chatRoomMsgs"
+                tools:listitem="@layout/sentmsg"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:layout_marginBottom="7sp"
+
+                />
+
+        </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/LLtemp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    <EditText
+        android:background="@drawable/rectanglebox"
+        android:id="@+id/chatRoomInput"
+        android:hint=" Type your message here!"
+        android:layout_margin="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:textColor="@color/black"
+        android:layout_weight="@integer/material_motion_duration_long_2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/chatRoomSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        android:text="send"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/chatRoomInput" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

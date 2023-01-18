@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">projectLFG</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_maps">Event Map</string>
+
+    <string name="join_events">View Joined Events</string>
+    <string name="find_new_event">Find New Event</string>
+    <string name="profile_settings">User Profile Settings</string>
+    <string name="view_contacts">Contacts</string>
+
+    <!-- For the gps create event dialog -->
+    <string name="event_name">Event Name</string>
+    <string name="event_name_hint">Enter a name for the event</string>
+    <string name="date_time">Date and Time</string>
+    <string name="location">Location</string>
+    <string name="location_hint">Enter an address</string>
+    <string name="information">Information</string>
+    <string name="information_hint">Enter event description</string>
+    <string name="activity_type">Activity Type</string>
+    <string name="sort_activity">Filter</string>
+    <string name="limit_people">Number of People</string>
+
+    <string name="create_event">create new event</string>
+    <string-array name="TitleSpinner">
+        <item>Best Event Ever!</item>
+        <item>Ok Event</item>
+        <item>Lame</item>
+    </string-array>
+
+    <string-array name="ActivityTypeSpinner">
+        <item>Sports</item>
+        <item>Board Games</item>
+        <item>Video Games</item>
+        <item>Industry Conference</item>
+        <item>TED</item>
+        <item>Field Marketing Events</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="GoAgain">
+        <item>Yes</item>
+        <item>No</item>
+    </string-array>
+
+    <string-array name="numofpeople">
+        <item>>100</item>
+        <item>>1000</item>
+        <item>All</item>
+    </string-array>
+
+</resources>
